@@ -9,7 +9,7 @@ data "aws_subnets" "public" {
     name   = "vpc-id"
     values = [data.aws_vpc.existing.id]
   }
-  
+
   filter {
     name   = "map-public-ip-on-launch"
     values = ["true"]
@@ -22,7 +22,7 @@ data "aws_subnets" "private" {
     name   = "vpc-id"
     values = [data.aws_vpc.existing.id]
   }
-  
+
   filter {
     name   = "map-public-ip-on-launch"
     values = ["false"]

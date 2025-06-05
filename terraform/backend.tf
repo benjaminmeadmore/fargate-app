@@ -1,3 +1,8 @@
+provider "aws" {
+  region  = var.aws_region
+  profile = var.aws_profile
+}
+
 terraform {
   backend "local" {
     path = "flask-app.tfstate"
@@ -16,15 +21,15 @@ data "aws_iam_role" "task_ecs" {
 }
 
 data "aws_vpc" "default_vpc" {
-  default = true
+  id = var.default_vpc_id
 }
 
-# data "aws_subnets" "subnets" {
-#   filter {
-#     name   = "vpc-id"
-#     values = [data.aws_vpc.default_vpc.id]
-#   }
-# }
+data "aws_subnets" "subnets" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default_vpc.id]
+  }
+}
 
 
 

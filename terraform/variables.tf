@@ -1,7 +1,4 @@
-provider "aws" {
-  region  = var.aws_region
-  profile = var.aws_profile
-}
+
 
 # Variables
 variable "aws_region" {
@@ -32,4 +29,10 @@ variable "ecr_repository_url" {
   description = "ECR repository URL"
   type        = string
   default     = "303981612052.dkr.ecr.eu-north-1.amazonaws.com/flaskdemo"
+}
+
+variable "default_vpc_id" {
+  description = "VPC ID for retrieving subnets"
+  type        = string
+  default     = "vpc-02052c2eb890946a4"
 }

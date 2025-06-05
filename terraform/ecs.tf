@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "app" {
     {
       name  = var.app_name
       image = "${var.ecr_repository_url}:latest"
-      
+
       portMappings = [
         {
           containerPort = var.container_port
@@ -86,17 +86,4 @@ resource "aws_ecs_service" "app" {
   tags = {
     Name = "${var.app_name}-service"
   }
-}
-
-# Outputs
-output "ecs_cluster_name" {
-  value = aws_ecs_cluster.main.name
-}
-
-output "ecs_service_name" {
-  value = aws_ecs_service.app.name
-}
-
-output "task_definition_arn" {
-  value = aws_ecs_task_definition.app.arn
 }

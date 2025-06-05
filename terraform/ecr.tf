@@ -29,8 +29,3 @@ resource "aws_ecr_lifecycle_policy" "app_policy" {
     ]
   })
 }
-
-# Output ECR repository URL
-output "ecr_repository_url" {
-  value = aws_ecr_repository.app.repository_url
-}

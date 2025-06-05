@@ -15,10 +15,10 @@ resource "aws_lb" "main" {
 
 # Target Group for ECS tasks
 resource "aws_lb_target_group" "app" {
-  name     = "${var.app_name}-tg"
-  port     = var.container_port
-  protocol = "HTTP"
-  vpc_id   = data.aws_vpc.existing.id
+  name        = "${var.app_name}-tg"
+  port        = var.container_port
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.existing.id
   target_type = "ip"
 
   health_check {
@@ -48,13 +48,4 @@ resource "aws_lb_listener" "main" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
-}
-
-# Output ALB DNS name
-output "alb_dns_name" {
-  value = aws_lb.main.dns_name
-}
-
-output "target_group_arn" {
-  value = aws_lb_target_group.app.arn
 }
