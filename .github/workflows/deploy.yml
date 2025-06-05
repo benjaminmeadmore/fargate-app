@@ -62,7 +62,6 @@ jobs:
           cd terraform
           terraform init
           terraform import aws_ecr_repository.app flaskdemo
-          terraform import aws_lb.main flask-app-tf-alb
           terraform import aws_lb_target_group.app flask-app-tf-tg
         
           
