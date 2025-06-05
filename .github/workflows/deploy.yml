@@ -21,7 +21,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          registries: ${{ vars.AWS_ACCOUNT }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+          registry-ids: ${{ vars.AWS_ACCOUNT }}
           
       - name: Build and push Docker image
         env:
