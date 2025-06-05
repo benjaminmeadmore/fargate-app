@@ -1,13 +1,12 @@
-# Use existing VPC
-data "aws_vpc" "existing" {
-  id = "vpc-02052c2eb890946a4"
+data "aws_vpc" "default_vpc" {
+  id = var.default_vpc_id
 }
 
 # Get public subnets for ALB
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.existing.id]
+    values = [data.aws_vpc.default_vpc.id]
   }
 
   filter {
@@ -20,7 +19,7 @@ data "aws_subnets" "public" {
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.existing.id]
+    values = [data.aws_vpc.default_vpc.id]
   }
 
   filter {
@@ -32,7 +31,7 @@ data "aws_subnets" "private" {
 # Security group for ALB
 resource "aws_security_group" "alb" {
   name_prefix = "${var.app_name}-alb-"
-  vpc_id      = data.aws_vpc.existing.id
+  vpc_id      = data.aws_vpc.default_vpc.id
 
   ingress {
     from_port   = 80
@@ -56,7 +55,7 @@ resource "aws_security_group" "alb" {
 # Security group for ECS tasks
 resource "aws_security_group" "ecs_tasks" {
   name_prefix = "${var.app_name}-ecs-"
-  vpc_id      = data.aws_vpc.existing.id
+  vpc_id      = data.aws_vpc.default_vpc.id
 
   ingress {
     from_port       = var.container_port
