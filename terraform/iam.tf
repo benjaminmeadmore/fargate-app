@@ -25,26 +25,6 @@ resource "aws_iam_role" "ecs_task_role" {
   }
 }
 
-# Policy for CloudWatch Logs access
-resource "aws_iam_policy" "ecs_logging" {
-  name        = "${var.app_name}-logging-policy"
-  description = "Allow ECS tasks to write to CloudWatch Logs"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:${var.aws_region}:*:log-group:/ecs/${var.app_name}:*"
-      }
-    ]
-  })
-}
-
 # Attach logging policy to task role
 resource "aws_iam_role_policy_attachment" "ecs_task_logging" {
   role       = aws_iam_role.ecs_task_role.name
