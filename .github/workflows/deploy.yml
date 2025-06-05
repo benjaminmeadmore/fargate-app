@@ -56,6 +56,15 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
+
+      - name: Import existing resources
+        run: |
+          cd terraform
+          terraform init
+          terraform import aws_ecr_repository.app flaskdemo
+          terraform import aws_lb.main flask-app-tf-alb
+          terraform import aws_lb_target_group.app flask-app-tf-tg
+        
           
       - name: Deploy infrastructure with Terraform
         run: |
