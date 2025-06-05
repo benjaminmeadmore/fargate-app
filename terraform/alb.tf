@@ -18,7 +18,7 @@ resource "aws_lb_target_group" "app" {
   name        = "${var.app_name}-tg"
   port        = var.container_port
   protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.existing.id
+  vpc_id      = data.aws_vpc.default_vpc.id
   target_type = "ip"
 
   health_check {

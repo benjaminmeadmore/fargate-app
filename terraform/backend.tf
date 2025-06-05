@@ -5,7 +5,7 @@ provider "aws" {
 
 terraform {
   backend "local" {
-    path = "flask-app.tfstate"
+    path = "./flask-app.tfstate"
   }
 
   required_providers {
@@ -16,8 +16,8 @@ terraform {
   }
 }
 
-data "aws_iam_role" "task_ecs" {
-  name = "ecsTaskExecutionRole"
+data "aws_iam_role" "ecs_task_execution_role" {
+  name = var.iam_ecs_task_execution_role_name
 }
 
 data "aws_vpc" "default_vpc" {

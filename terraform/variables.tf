@@ -25,6 +25,12 @@ variable "container_port" {
   default     = 5000
 }
 
+variable "iam_ecs_task_execution_role_name" {
+  description = "IAM Role for ecs permissions"
+  type        = string
+  default     = "ecsTaskExecutionRole"
+}
+
 variable "ecr_repository_url" {
   description = "ECR repository URL"
   type        = string
