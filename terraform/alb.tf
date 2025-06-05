@@ -33,9 +33,9 @@ resource "aws_lb_target_group" "app" {
     unhealthy_threshold = 2
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-tg"
-  }
+  })
 }
 
 # ALB Listener
@@ -48,4 +48,8 @@ resource "aws_lb_listener" "main" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
+  
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-tg"
+  })
 }

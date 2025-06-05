@@ -31,9 +31,9 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-alb-sg"
-  }
+  })
 }
 
 # Security group for ECS tasks
@@ -55,7 +55,7 @@ resource "aws_security_group" "ecs_tasks" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-ecs-sg"
-  }
+  })
 }

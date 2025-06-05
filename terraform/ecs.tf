@@ -1,3 +1,17 @@
+# Locals
+locals {
+  default_tags = {
+    Github           = "fargate-app"
+    Client           = "travelperk"
+    Managed          = "terraform"
+    Billing          = "foo_bar"
+    Owner            = "bmeadmore"
+    Stage            = "prod"
+    Region           = "eu-north-1"
+    Application      = "flask-hello-world"
+    CreatedDate      = "2025-06-30"
+  }
+}
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-cluster"
@@ -7,9 +21,9 @@ resource "aws_ecs_cluster" "main" {
     value = "enabled"
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-cluster"
-  }
+  })
 }
 
 # ECS Task Definition
@@ -46,9 +60,9 @@ resource "aws_ecs_task_definition" "app" {
     }
   ])
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-task"
-  }
+  })
 }
 
 # ECS Service
@@ -61,7 +75,7 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
-    subnets          = data.aws_subnets.public.ids
+    subnets          = data.aws_subnets.private.ids
     assign_public_ip = true
   }
 
@@ -73,7 +87,7 @@ resource "aws_ecs_service" "app" {
 
   depends_on = [aws_lb_listener.main]
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-service"
-  }
+  })
 }

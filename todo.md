@@ -124,9 +124,10 @@
 - Limit to 2 replicas as per requirements
 
 ## To Discuss
-☐ Set up route tables and internet gateway ?
-☐ Set up ECS auto-scaling ?
-☐ Configure logging to CloudWatch ? I believe my IAM user lacks these permissions 
+- Set up route tables and internet gateway ?
+- Set up ECS auto-scaling ?
+- Configure logging to CloudWatch ? I believe my IAM user lacks these permissions 
+- Add tags 
 
 
 
