@@ -56,15 +56,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
-
-      - name: Import existing resources
-        run: |
-          cd terraform
-          terraform init
-          terraform import aws_ecr_repository.app flaskdemo
-          terraform import aws_lb.main arn:aws:elasticloadbalancing:eu-north-1:303981612052:loadbalancer/app/flask-app-tf-alb/eac5bc396eeebb8d
-          terraform import aws_lb_target_group.app arn:aws:elasticloadbalancing:eu-north-1:303981612052:targetgroup/flask-app-tf-tg/ee96aad8dbcbc16d
-        
           
       - name: Deploy infrastructure with Terraform
         run: |

@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "local" {
-    path = "./flask-app.tfstate"
+    path = "flask-app.tfstate"
   }
 
   required_providers {
