@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -23,7 +23,7 @@ jobs:
         
       - name: Build and push Docker image
         env:
-          ECR_REGISTRY: 303981612052.dkr.ecr.eu-north-1.amazonaws.com
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: flaskdemo
           IMAGE_TAG: ${{ github.sha }}
         run: |
