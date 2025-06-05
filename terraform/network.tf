@@ -1,4 +1,3 @@
-
 # Get private subnets for ECS tasks
 data "aws_subnets" "private" {
   filter {
@@ -10,6 +9,94 @@ data "aws_subnets" "private" {
     name   = "map-public-ip-on-launch"
     values = ["false"]
   }
+}
+
+# Get public subnets for ALB
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default_vpc.id]
+  }
+
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+}
+
+# VPC Endpoint for ECR API
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = data.aws_vpc.default_vpc.id
+  service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = data.aws_subnets.private.ids
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+
+  private_dns_enabled = true
+
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-ecr-api-endpoint"
+  })
+}
+
+# VPC Endpoint for ECR Docker
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = data.aws_vpc.default_vpc.id
+  service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = data.aws_subnets.private.ids
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+
+  private_dns_enabled = true
+
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-ecr-dkr-endpoint"
+  })
+}
+
+# VPC Endpoint for S3 (required for ECR)
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = data.aws_vpc.default_vpc.id
+  service_name      = "com.amazonaws.${var.aws_region}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private.id]
+
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-s3-endpoint"
+  })
+}
+
+# Route table for private subnets
+resource "aws_route_table" "private" {
+  vpc_id = data.aws_vpc.default_vpc.id
+
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-private-rt"
+  })
+}
+
+# Associate private subnets with route table
+resource "aws_route_table_association" "private" {
+  count          = length(data.aws_subnets.private.ids)
+  subnet_id      = data.aws_subnets.private.ids[count.index]
+  route_table_id = aws_route_table.private.id
+}
+
+# Security group for VPC endpoints
+resource "aws_security_group" "vpc_endpoints" {
+  name_prefix = "${var.app_name}-vpc-endpoints-"
+  vpc_id      = data.aws_vpc.default_vpc.id
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs_tasks.id]
+  }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-vpc-endpoints-sg"
+  })
 }
 
 # Security group for ALB
