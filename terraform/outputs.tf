@@ -43,9 +43,9 @@ output "vpc_id" {
   value       = data.aws_vpc.default_vpc.id
 }
 
-output "public_subnet_ids" {
+output "private_subnet_ids" {
   description = "IDs of the public subnets"
-  value       = data.aws_subnets.public.ids
+  value       = data.aws_subnets.private.ids
 }
 
 output "alb_security_group_id" {

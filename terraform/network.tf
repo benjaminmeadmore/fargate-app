@@ -1,15 +1,3 @@
-# Get public subnets for ALB
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default_vpc.id]
-  }
-
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-}
 
 # Get private subnets for ECS tasks
 data "aws_subnets" "private" {
