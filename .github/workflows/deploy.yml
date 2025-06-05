@@ -47,20 +47,16 @@ jobs:
         with:
           terraform_version: latest
           
-      - name: Install jq
-        run: sudo apt-get install -y jq
-          
       - name: Terraform Plan
         id: plan
         run: |
           cd terraform
           terraform init
-          terraform plan -out=tfplan
-          terraform show -json tfplan > tfplan.json
+          terraform plan
           
-      - name: Parse Plan
-        run: |
-          jq -r '([.resource_changes[].change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' tfplan.json
+      # - name: Parse Plan
+      #   run: |
+      #     jq -r '([.resource_changes[].change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' tfplan.json
 
   apply:
     needs: plan
