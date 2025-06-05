@@ -15,26 +15,67 @@ jobs:
         with:
           terraform_version: latest
           
-      - name: Terraform Validate
+      - name: Terraform Format
         run: |
           cd terraform
           terraform init
           terraform fmt 
           terraform validate
 
-  deploy:
+      - name: Terraform Validate
+        run: |
+          cd terraform
+          terraform init
+          terraform validate
+
+  plan:
+    needs: validate
     runs-on: ubuntu-latest
     environment: prod
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
           
+      - name: Install jq
+        run: sudo apt-get install -y jq
+          
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd terraform
+          terraform init
+          terraform plan -out=tfplan
+          terraform show -json tfplan > tfplan.json
+          
+      - name: Parse Plan
+        run: |
+          jq -r '([.resource_changes[].change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' tfplan.json
+
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -51,18 +92,17 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
           
-      - name: Deploy infrastructure with Terraform
+      - name: Terraform Apply
         run: |
           cd terraform
           terraform init
-          terraform plan
-          terraform apply -auto-approve
+          terraform apply -auto-approve tfplan
           
       - name: Update ECS service
         run: |
@@ -72,78 +112,20 @@ jobs:
             --force-new-deployment \
             --region eu-north-1
 
-  # plan:
-  #   needs: validate
-  #   runs-on: ubuntu-latest
-  #   environment: prod
-  #   steps:
-  #     - uses: actions/checkout@v2]
-
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ vars.AWS_REGION }}
+  destroy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
       
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: latest
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
           
-  #     - name: Install jq
-  #       run: sudo apt-get install -y jq
-          
-  #     - name: Terraform Plan
-  #       run: |
-  #         cd terraform
-  #         terraform init
-  #         terraform plan -out=${{ env.PLAN }}
-  #         terraform show -json ${{ env.PLAN }} > ${{ env.JSON_PLAN_FILE }}
-          
-  #     - name: Parse Plan
-  #       run: |
-  #         jq -r '([.resource_changes[].change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' ${{ env.JSON_PLAN_FILE }}
-
-  # apply:
-  #   needs: plan
-  #   runs-on: ubuntu-latest
-  #   environment: prod
-  #   steps:
-  #     - uses: actions/checkout@v2
-
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ vars.AWS_REGION }}
-      
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: latest
-          
-  #     - name: Terraform Apply
-  #       run: |
-  #         cd terraform
-  #         terraform init
-  #         terraform apply -auto-approve ${{ env.PLAN }}
-
-  # destroy:
-  #   if: github.event_name == 'workflow_dispatch'
-  #   runs-on: ubuntu-latest
-  #   environment: prod
-  #   steps:
-  #     - uses: actions/checkout@v2
-      
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: latest
-          
-  #     - name: Terraform Destroy
-  #       run: |
-  #         cd terraform
-  #         terraform init
-  #         terraform destroy -auto-approve
+      - name: Terraform Destroy
+        run: |
+          cd terraform
+          terraform init
+          terraform destroy -auto-approve
