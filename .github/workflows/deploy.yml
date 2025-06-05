@@ -4,6 +4,24 @@ on:
     branches: [ main ]
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          
+      - name: Terraform Validate
+        run: |
+          cd terraform
+          terraform init
+          terraform fmt 
+          terraform validate
+
   deploy:
     runs-on: ubuntu-latest
     environment: prod
@@ -37,7 +55,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.0
+          terraform_version: latest
           
       - name: Deploy infrastructure with Terraform
         run: |
@@ -53,3 +71,65 @@ jobs:
             --service flask-app-tf-service \
             --force-new-deployment \
             --region eu-north-1
+
+  plan:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          
+      - name: Install jq
+        run: sudo apt-get install -y jq
+          
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform init
+          terraform plan -out=${{ env.PLAN }}
+          terraform show -json ${{ env.PLAN }} > ${{ env.JSON_PLAN_FILE }}
+          
+      - name: Parse Plan
+        run: |
+          jq -r '([.resource_changes[].change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' ${{ env.JSON_PLAN_FILE }}
+
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve ${{ env.PLAN }}
+
+  destroy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          
+      - name: Terraform Destroy
+        run: |
+          cd terraform
+          terraform init
+          terraform destroy -auto-approve
