@@ -24,46 +24,22 @@ data "aws_subnets" "public" {
   }
 }
 
-# VPC Endpoint for ECR API
-resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id              = data.aws_vpc.default_vpc.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = data.aws_subnets.private.ids
-  security_group_ids  = [aws_security_group.vpc_endpoints.id]
-
-  private_dns_enabled = true
-
-  tags = merge(local.default_tags, {
-    Name = "${var.app_name}-ecr-api-endpoint"
-  })
+# Get existing VPC Endpoint for ECR API
+data "aws_vpc_endpoint" "ecr_api" {
+  vpc_id       = data.aws_vpc.default_vpc.id
+  service_name = "com.amazonaws.${var.aws_region}.ecr.api"
 }
 
-# VPC Endpoint for ECR Docker
-resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id              = data.aws_vpc.default_vpc.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = data.aws_subnets.private.ids
-  security_group_ids  = [aws_security_group.vpc_endpoints.id]
-
-  private_dns_enabled = true
-
-  tags = merge(local.default_tags, {
-    Name = "${var.app_name}-ecr-dkr-endpoint"
-  })
+# Get existing VPC Endpoint for ECR Docker
+data "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id       = data.aws_vpc.default_vpc.id
+  service_name = "com.amazonaws.${var.aws_region}.ecr.dkr"
 }
 
-# VPC Endpoint for S3 (required for ECR)
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = data.aws_vpc.default_vpc.id
-  service_name      = "com.amazonaws.${var.aws_region}.s3"
-  vpc_endpoint_type = "Gateway"
-  route_table_ids   = [aws_route_table.private.id]
-
-  tags = merge(local.default_tags, {
-    Name = "${var.app_name}-s3-endpoint"
-  })
+# Get existing VPC Endpoint for S3
+data "aws_vpc_endpoint" "s3" {
+  vpc_id       = data.aws_vpc.default_vpc.id
+  service_name = "com.amazonaws.${var.aws_region}.s3"
 }
 
 # Route table for private subnets
