@@ -53,6 +53,7 @@ Required environment variables (see `.env.example`):
 
 - Github 
    - Lowest hanging fruit with more time would be to rework the deploy.yml pipeline to add the following: 
+      - add validate and merge jobs before merging 
       - security scanning (Trivy - the amount of high and critical issues this would throw up would be daunting)
       - linting (tflint)
       - drift detection (driftctl)
