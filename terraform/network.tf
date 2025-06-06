@@ -1,13 +1,16 @@
+# Get all subnets in the VPC
+data "aws_subnets" "all" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default_vpc.id]
+  }
+}
+
 # Get private subnets for ECS tasks
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default_vpc.id]
-  }
-
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["false"]
   }
 }
 
@@ -16,11 +19,6 @@ data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default_vpc.id]
-  }
-
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
   }
 }
 
@@ -114,4 +112,21 @@ resource "aws_security_group" "ecs_tasks" {
   tags = merge(local.default_tags, {
     Name = "${var.app_name}-ecs-sg"
   })
+}
+
+# Output for debugging
+output "vpc_id" {
+  value = data.aws_vpc.default_vpc.id
+}
+
+output "all_subnet_ids" {
+  value = data.aws_subnets.all.ids
+}
+
+output "private_subnet_ids" {
+  value = data.aws_subnets.private.ids
+}
+
+output "public_subnet_ids" {
+  value = data.aws_subnets.public.ids
 }
