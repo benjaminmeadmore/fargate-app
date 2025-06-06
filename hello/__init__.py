@@ -13,7 +13,8 @@ def create_app():
     app = Flask(__name__)
     
     # Configure security headers
-    Talisman(app,
+    Talisman(
+        app,
         force_https=False,  # Allow HTTP for health checks
         strict_transport_security=False,  # Disable HSTS for HTTP
         session_cookie_secure=False,  # Allow non-secure cookies for HTTP
