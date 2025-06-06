@@ -113,20 +113,3 @@ resource "aws_security_group" "ecs_tasks" {
     Name = "${var.app_name}-ecs-sg"
   })
 }
-
-# Output for debugging
-output "vpc_id" {
-  value = data.aws_vpc.default_vpc.id
-}
-
-output "all_subnet_ids" {
-  value = data.aws_subnets.all.ids
-}
-
-output "private_subnet_ids" {
-  value = data.aws_subnets.private.ids
-}
-
-output "public_subnet_ids" {
-  value = data.aws_subnets.public.ids
-}
