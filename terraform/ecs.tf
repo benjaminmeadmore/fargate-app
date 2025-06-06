@@ -31,8 +31,8 @@ resource "aws_ecs_task_definition" "app" {
   family                   = var.app_name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = 512
+  memory                   = 1024
   execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
@@ -44,6 +44,25 @@ resource "aws_ecs_task_definition" "app" {
         {
           containerPort = var.container_port
           protocol      = "tcp"
+        }
+      ]
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+
+      environment = [
+        {
+          name  = "FLASK_APP"
+          value = "app.py"
+        },
+        {
+          name  = "FLASK_ENV"
+          value = "production"
         }
       ]
 
