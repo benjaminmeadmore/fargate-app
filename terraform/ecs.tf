@@ -12,6 +12,16 @@ locals {
     CreatedDate      = "2025-06-30"
   }
 }
+# CloudWatch Log Group for ECS
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/${var.app_name}"
+  retention_in_days = 7
+  
+  tags = merge(local.default_tags, {
+    Name = "${var.app_name}-logs"
+  })
+}
+
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-cluster"
@@ -48,7 +58,7 @@ resource "aws_ecs_task_definition" "app" {
       ]
 
       healthCheck = {
-        command     = ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1"]
+        command     = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
