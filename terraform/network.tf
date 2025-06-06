@@ -32,23 +32,6 @@ data "aws_subnets" "public" {
   }
 }
 
-# Get existing VPC Endpoint for ECR API
-data "aws_vpc_endpoint" "ecr_api" {
-  vpc_id       = data.aws_vpc.default_vpc.id
-  service_name = "com.amazonaws.${var.aws_region}.ecr.api"
-}
-
-# Get existing VPC Endpoint for ECR Docker
-data "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id       = data.aws_vpc.default_vpc.id
-  service_name = "com.amazonaws.${var.aws_region}.ecr.dkr"
-}
-
-# Get existing VPC Endpoint for S3
-data "aws_vpc_endpoint" "s3" {
-  vpc_id       = data.aws_vpc.default_vpc.id
-  service_name = "com.amazonaws.${var.aws_region}.s3"
-}
 
 
 # Security group for VPC endpoints
