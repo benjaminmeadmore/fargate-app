@@ -79,6 +79,8 @@ resource "aws_ecs_service" "app" {
     assign_public_ip = false
   }
 
+  health_check_grace_period_seconds = 60
+
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
     container_name   = var.app_name
