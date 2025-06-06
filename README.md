@@ -1,60 +1,44 @@
 # flask 'hello-world' app w/ AWS Fargate Deployment
 
-This project demonstrates a Flask application deployed on AWS Fargate using Terraform for infrastructure management and GitHub Actions for CI/CD.
+This project demonstrates a Flask application deployed on AWS Fargate using Terraform for IaC and GitHub Actions for CI/CD.
 
-## Architecture Overview
+## Test
 
-The application is deployed as a containerized Flask service running on AWS Fargate, with the following components:
+You can access the app at:
+http://flask-app-tf-alb-1028148465.eu-north-1.elb.amazonaws.com/
+
+## Overview
+
+The app is deployed as a containerized Flask service running on AWS Fargate, with the following components:
 - Flask application with security features (CORS, rate limiting, security headers)
-- Docker containerization with multi-stage builds
+- Docker containerization with multi-stage builds using gunicorn
 - AWS Fargate for serverless container deployment
 - Application Load Balancer for traffic distribution
 - ECR for Docker image storage
 - GitHub Actions for CI/CD pipeline
 
-## Development Workflow
+### API Endpoints
+- The root endpoint (`/`) responds with a friendly "Hello, World" message
+- The health check endpoint (`/health`) confirms everything is running properly with version 1.0.0
 
-### Local Development
-1. Clone the repository
-2. Create a virtual environment: `python -m venv venv`
-3. Activate the virtual environment:
-   - Windows: `venv\Scripts\activate`
-   - Unix/MacOS: `source venv/bin/activate`
-4. Install dependencies: `pip install -r requirements.txt`
-5. Copy `.env.example` to `.env` and configure your environment variables
-6. Run the application: `flask run`
-
-### Deployment Process
-1. Create a feature branch
-2. Make your changes
-3. Create a pull request
-4. GitHub Actions will automatically:
-   - Run tests and linting
-   - Build Docker image
-   - Push to ECR
-   - Deploy infrastructure changes
-5. After merging to main:
-   - GitHub Actions will redeploy automatically
-   - Update ECS service with the new image
-
-## Infrastructure
-
-The infrastructure is managed using Terraform and includes:
-- ECS Fargate cluster
-- Application Load Balancer
-- ECR repository
-- Security groups and IAM roles
-- VPC and networking components
+### Core Features
+All the essential features are working as expected:
+- The Flask application is running smoothly
+- Rate limiting is properly configured to protect against abuse
+- CORS is enabled for secure cross-origin requests
+- Security headers are in place thanks to Talisman
+- The load balancer is correctly routing traffic
+- Health checks are passing consistently
+- The application has proper internet connectivity
 
 ### Important Infrastructure Notes
 - Uses local state file: `./terraform/flask-app.tfstate`
 - Limited to 2 replicas as per requirements
-- Uses existing deafult vpc and two private subnets
+- Uses existing default_vpc, two subnets, an igw and rtable
 - Includes proper health checks
 - Configured with appropriate sgrs
 
 ## Security Features
-
 The application includes several security measures:
 - HTTPS enforcement
 - CORS protection
