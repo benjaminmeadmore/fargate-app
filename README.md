@@ -1,6 +1,8 @@
-# flask 'hello-world' app  
+# 'hello-world' flask app w/ Terraform
 
-This was a fun project to work on - having not worked with ECS too much in the past getting the containers activated correctly was a cruel master. As always, networking reamins the most challenging aspect from an abstraction point of view. Definitely learnt alot along the way! 
+This project is an example of deploying a containerized flask service running on [ECS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html), with [Github Actions](https://github.com/features/actions) triggering orchestration and [Terraform](https://www.terraform.io/) for provisioning.
+
+All in all it was a fun project to work on over one week - having not worked with ECS too much in the past getting the containers activated correctly was a cruel master. As always, networking reamins the most challenging aspect from any abstracted point of view. Definitely learnt alot along the way! 
 
 ## Usage
 
@@ -8,45 +10,18 @@ You can test out the app at:
 http://flask-app-tf-alb-1028148465.eu-north-1.elb.amazonaws.com/
 
 API Endpoints
-- The root endpoint (`/`) responds with a friendly "Hello, World" message
+- The root endpoint (`/`) responds with a "Hello, World" message
 - The health check endpoint (`/health`) confirms everything is running properly with version 1.0.0
 
 ## Overview
 
-The app is deployed as a containerized Flask service running on AWS Fargate, with Github Actions triggering orchestration and Tf for provisioning:
-- The flask application itself has basic security features (CORS, rate limiting, security headers)
-- Docker containerization with multi-stage builds using gunicorn
-- AWS Fargate for serverless container deployment
-- Application Load Balancer for traffic distribution
-- ECR for Docker image storage
-- GitHub Actions for CI/CD pipeline
-
-### Core Features
-All the essential features are working as expected:
-- The Flask application is running smoothly
-- Rate limiting is properly configured to protect against abuse
-- CORS is enabled for secure cross-origin requests
-- Security headers are in place thanks to Talisman
-- The load balancer is correctly routing traffic
-- Health checks are passing consistently
-- The application has proper internet connectivity
-
-### Important Infrastructure Notes
-- Uses local state file: `./terraform/flask-app.tfstate`
-- Limited to 2 replicas as per requirements
-- Uses existing default_vpc, two subnets, an igw and rtable
-- Includes proper health checks
-- Configured with appropriate sgrs
-
-## Security Features
-The application includes several security measures:
-- HTTPS enforcement
-- CORS protection
-- Rate limiting
-- Security headers (CSP, HSTS)
-- Non-root user in Docker container
-- Environment variable management
-- Health check endpoints
+- The flask application itself has some basic security features (CORS, rate limiting, security headers)
+- Docker build runs as non-root and uses gunicorn
+- ECS service defines 2 tasks for deployment, each assigned public IPs in subnets of a default_vpc in eu-north-1
+- ALB listens on 80 for HTTP traffic distribution
+- ECR stores the image 
+- GitHub Actions for deploy and pr-testing pipelines
+- Uses local Tf state file: `./terraform/flask-app.tfstate`
 
 ## CI/CD Pipeline
 
@@ -56,23 +31,15 @@ The application includes several security measures:
 - Builds and tests Docker image
 - Prevents merging if tests fail
 
-### Deployment Workflow
-- Triggers on merge to main
-- Validates Terraform configuration
-- Plans infrastructure changes
-- Applies changes if plan is approved
-- Updates ECS service with new image
-
-## Prerequisites
-
-- AWS CLI configured with appropriate permissions
-- Terraform installed
-- Docker installed
-- Python 3.11+
-- GitHub account with repository access
+### Tf Deployment Workflow
+- Triggers on merge to main, runs the following jobs:
+   - validate & fmt 
+   - plan infrastructure changes
+   - apply changes if plan is approved
+   - update ECS service with new image
+   - destroy (manual trigger)
 
 ## Environment Variables
-
 Required environment variables (see `.env.example`):
 - `FLASK_APP`: Application entry point
 - `FLASK_ENV`: Environment (development/production)
@@ -82,33 +49,33 @@ Required environment variables (see `.env.example`):
 - `AWS_ACCESS_KEY_ID`: AWS access key
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key
 
-## Thoughts
+## Future Thoughts
 
-- Lowest hanging fruit with more time would be to rework the deploy.yml pipeline to add the following: 
-   - Add security scanning (Trivy)
-   - Add Tf linting (tflint)
-   - Implement drift detection (driftctl)
-   - Implement plan output parsing (jq) 
-   - Add plan caching (S3)
-   - Use the latest alpine image for a lighterweight 
+- Github 
+   - Lowest hanging fruit with more time would be to rework the deploy.yml pipeline to add the following: 
+      - security scanning (Trivy - the amount of high and critical issues this would throw up would be daunting)
+      - linting (tflint)
+      - drift detection (driftctl)
+      - plan output parsing (jq) 
+      - plan caching (S3)
+      - Use the latest alpine image for a more lightweight/faster container (current build ~2mins) 
+
+- ALB
+   - I would definitely add an SSL certificate manager based on a private domain
+   - I would add another listener for HTTPS and redirect HTTP traffic as well 
+   - Depending on how available I wanted the service to be I would add a threshold for desired healthy instances and provision more app servers 
 
 - Then on the Tf side of things: 
-   - Add remote storage backend (S3)
+   - Reconfigure the repo to use a locals file and modularize the deployment
+   - Add remote storage backend in S3 
+   - Improve on the ECS deployment with auto-scaling (cost-dependent)
 
+- Security: 
+   - Stand up Cloudwatch monitoring for the ecs tasks. This was a huge source of frustration during the build. 
+   - Configure the alb to use another target group for HTTPS/SSL 
+   - Improve on the ECS deployment with auto-scaling (cost-dependent)
 
 - I couldn't get the health checks to work using curl or wget so for now they are based on python's urllib package. 
-
-
-
-- [ ] Configure ECS auto-scaling
-- [ ] Configure the alb to use another target group for HTTPS/SSL 
-- [ ] Implement CloudWatch logging (IAM) and VPC flowlogs
-- [ ] Add security scanning (Trivy)
-- [ ] Add Terraform linting (tflint)
-- [ ] Implement drift detection (driftctl)
-- [ ] Add remote storage backend (S3)
-
-
 
 ## License
 
