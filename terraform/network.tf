@@ -12,6 +12,11 @@ data "aws_subnets" "private" {
     name   = "vpc-id"
     values = [data.aws_vpc.default_vpc.id]
   }
+  
+  filter {
+    name   = "tag:Name"
+    values = ["*private*"]
+  }
 }
 
 # Get public subnets for ALB
@@ -19,6 +24,11 @@ data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default_vpc.id]
+  }
+  
+  filter {
+    name   = "tag:Name"
+    values = ["*public*"]
   }
 }
 
