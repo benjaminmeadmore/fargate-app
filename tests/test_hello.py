@@ -1,5 +1,5 @@
-import pytest
 import json
+
 
 # Response format changed to json from plain text
 def test_main_page(client):
