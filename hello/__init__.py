@@ -14,9 +14,9 @@ def create_app():
     
     # Configure security headers
     Talisman(app,
-        force_https=True,
-        strict_transport_security=True,
-        session_cookie_secure=True,
+        force_https=False,  # Allow HTTP for health checks
+        strict_transport_security=False,  # Disable HSTS for HTTP
+        session_cookie_secure=False,  # Allow non-secure cookies for HTTP
         content_security_policy={
             'default-src': "'self'",
             'img-src': "'self' data: https:",
