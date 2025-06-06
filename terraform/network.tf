@@ -50,14 +50,6 @@ data "aws_vpc_endpoint" "s3" {
   service_name = "com.amazonaws.${var.aws_region}.s3"
 }
 
-# Get existing route table for private subnets
-data "aws_route_table" "private" {
-  vpc_id = data.aws_vpc.default_vpc.id
-  filter {
-    name   = "association.subnet-id"
-    values = data.aws_subnets.private.ids
-  }
-}
 
 # Security group for VPC endpoints
 resource "aws_security_group" "vpc_endpoints" {
