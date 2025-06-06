@@ -45,13 +45,6 @@ data "aws_route_table" "alb_subnets" {
   route_table_id = "rtb-0c5699cdd4d11d72b"
 }
 
-# Add internet gateway route to the ALB subnets route table
-resource "aws_route" "alb_internet_access" {
-  route_table_id         = data.aws_route_table.alb_subnets.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = data.aws_internet_gateway.default.id
-}
-
 # Security group for VPC endpoints
 resource "aws_security_group" "vpc_endpoints" {
   name_prefix = "${var.app_name}-vpc-endpoints-"
