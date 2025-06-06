@@ -59,7 +59,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         {
           name  = "FLASK_APP"
-          value = "hello:create_app"
+          value = "hello:create_app()"
         },
         {
           name  = "FLASK_ENV"
