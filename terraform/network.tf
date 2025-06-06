@@ -42,20 +42,13 @@ data "aws_vpc_endpoint" "s3" {
   service_name = "com.amazonaws.${var.aws_region}.s3"
 }
 
-# Route table for private subnets
-resource "aws_route_table" "private" {
+# Get existing route table for private subnets
+data "aws_route_table" "private" {
   vpc_id = data.aws_vpc.default_vpc.id
-
-  tags = merge(local.default_tags, {
-    Name = "${var.app_name}-private-rt"
-  })
-}
-
-# Associate private subnets with route table
-resource "aws_route_table_association" "private" {
-  count          = length(data.aws_subnets.private.ids)
-  subnet_id      = data.aws_subnets.private.ids[count.index]
-  route_table_id = aws_route_table.private.id
+  filter {
+    name   = "association.subnet-id"
+    values = data.aws_subnets.private.ids
+  }
 }
 
 # Security group for VPC endpoints

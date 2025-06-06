@@ -4,13 +4,13 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = data.aws_subnets.private.ids
+  subnets            = data.aws_subnets.public.ids
 
   enable_deletion_protection = false
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.app_name}-alb"
-  }
+  })
 }
 
 # Target Group for ECS tasks
@@ -50,6 +50,6 @@ resource "aws_lb_listener" "main" {
   }
   
   tags = merge(local.default_tags, {
-    Name = "${var.app_name}-tg"
+    Name = "${var.app_name}-listener"
   })
 }
