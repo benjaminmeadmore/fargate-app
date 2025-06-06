@@ -26,13 +26,13 @@ API Endpoints
 ## CI/CD Pipeline
 
 ### Pull Request Workflow
-- Runs on pull request creation
-- Executes tests and linting
-- Builds and tests Docker image
-- Prevents merging if tests fail
+- Triggers on pull-request creation, runs the following:
+   - Executes conftest.py and test_hello.py scripts 
+   - Builds and tests the Docker image
+   - Status checks prevent merging if tests fail
 
 ### Tf Deployment Workflow
-- Triggers on merge to main, runs the following jobs:
+- Triggers on merge to main, runs the following:
    - validate & fmt 
    - plan infrastructure changes
    - apply changes if plan is approved
@@ -49,7 +49,7 @@ Required environment variables (see `.env.example`):
 - `AWS_ACCESS_KEY_ID`: AWS access key
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key
 
-## Future Thoughts
+## Thoughts & Issues 
 
 - Github 
    - Lowest hanging fruit with more time would be to rework the deploy.yml pipeline to add the following: 
@@ -61,11 +61,12 @@ Required environment variables (see `.env.example`):
       - Use the latest alpine image for a more lightweight/faster container (current build ~2mins) 
 
 - ALB
-   - I would definitely add an SSL certificate manager based on a private domain
-   - I would add another listener for HTTPS and redirect HTTP traffic as well 
-   - Depending on how available I wanted the service to be I would add a threshold for desired healthy instances and provision more app servers 
+   - add an SSL certificate manager based on a private domain
+   - add another listener for HTTPS and redirect HTTP traffic as well 
+   - depending on how available I wanted the service to be I would add a threshold for desired healthy instances and provision more app servers 
 
-- Then on the Tf side of things: 
+- Terraform: 
+   
    - Reconfigure the repo to use a locals file and modularize the deployment
    - Add remote storage backend in S3 
    - Improve on the ECS deployment with auto-scaling (cost-dependent)
@@ -75,7 +76,9 @@ Required environment variables (see `.env.example`):
    - Configure the alb to use another target group for HTTPS/SSL 
    - Improve on the ECS deployment with auto-scaling (cost-dependent)
 
-- I couldn't get the health checks to work using curl or wget so for now they are based on python's urllib package. 
+- Issues: 
+   - I couldn't get the health checks to work using curl or wget so for now they are based on python's urllib package. 
+   - aws_security_group.vpc_endpoints is constantly recreated on each plan & apply
 
 ## License
 
