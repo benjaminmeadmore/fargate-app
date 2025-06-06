@@ -1,3 +1,11 @@
+# Get existing internet gateway
+data "aws_internet_gateway" "default" {
+  filter {
+    name   = "attachment.vpc-id"
+    values = [data.aws_vpc.default_vpc.id]
+  }
+}
+
 # Get all subnets in the VPC
 data "aws_subnets" "all" {
   filter {
@@ -32,7 +40,17 @@ data "aws_subnets" "public" {
   }
 }
 
+# Import existing route table that ALB subnets are using
+data "aws_route_table" "alb_subnets" {
+  route_table_id = "rtb-0c5699cdd4d11d72b"
+}
 
+# Add internet gateway route to the ALB subnets route table
+resource "aws_route" "alb_internet_access" {
+  route_table_id         = data.aws_route_table.alb_subnets.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = data.aws_internet_gateway.default.id
+}
 
 # Security group for VPC endpoints
 resource "aws_security_group" "vpc_endpoints" {
